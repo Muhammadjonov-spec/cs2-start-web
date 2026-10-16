@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CS2 Web 3D - 1:1 Counter-Strike 2 Simulation</title>
+  <script type="module" crossorigin src="/assets/index-BcHQuOC7.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-48AZG_Nz.css">
+</head>
+<body>
+  <!-- 3D Render Canvas -->
+  <div id="game-container">
+    <canvas id="three-canvas"></canvas>
+
+    <!-- CS2 Crosshair -->
+    <div id="crosshair">
+      <div class="ch-line ch-top"></div>
+      <div class="ch-line ch-bottom"></div>
+      <div class="ch-line ch-left"></div>
+      <div class="ch-line ch-right"></div>
+      <div class="ch-dot"></div>
+    </div>
+
+    <!-- Sniper Scope Overlay (AWP) -->
+    <div id="sniper-scope" class="hidden">
+      <div class="scope-cross-h"></div>
+      <div class="scope-cross-v"></div>
+      <div class="scope-vignette"></div>
+    </div>
+
+    <!-- CS2 Panorama HUD -->
+    <div id="hud">
+      <!-- Radar / Minimap (Top Left) -->
+      <div id="radar-container">
+        <canvas id="radar-canvas" width="160" height="160"></canvas>
+        <div id="radar-player-dot"></div>
+        <div class="radar-label">MAP: DE_DUST2</div>
+      </div>
+
+      <!-- Top Center Match Info -->
+      <div id="match-header">
+        <div class="team-score t-team">
+          <span class="team-name">T</span>
+          <span id="score-t">0</span>
+        </div>
+        <div id="match-timer">10:00</div>
+        <div class="team-score ct-team">
+          <span id="score-ct">0</span>
+          <span class="team-name">CT</span>
+        </div>
+      </div>
+
+      <!-- Killfeed (Top Right) -->
+      <div id="killfeed"></div>
+
+      <!-- Bottom Left: Health & Armor -->
+      <div id="status-container">
+        <div class="stat-box" id="health-box">
+          <span class="stat-icon">✚</span>
+          <span id="health-val">100</span>
+        </div>
+        <div class="stat-box" id="armor-box">
+          <span class="stat-icon">🛡</span>
+          <span id="armor-val">100</span>
+        </div>
+      </div>
+
+      <!-- Bottom Center: Active Weapon & Inventory -->
+      <div id="inventory-bar">
+        <div class="inv-slot active" data-slot="1">1: AK-47</div>
+        <div class="inv-slot" data-slot="2">2: DEAGLE</div>
+        <div class="inv-slot" data-slot="3">3: KNIFE</div>
+      </div>
+
+      <!-- Bottom Right: Ammo & Reserve -->
+      <div id="ammo-container">
+        <div id="weapon-display-name">AK-47</div>
+        <div id="ammo-numbers">
+          <span id="clip-ammo">30</span>
+          <span class="ammo-separator">/</span>
+          <span id="reserve-ammo">90</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hitmarker / Damage Indicator -->
+    <div id="hitmarker" class="hidden">✕</div>
+    <div id="damage-flash" class="hidden"></div>
+
+    <!-- Start / Pause / Settings Menu Modal -->
+    <div id="menu-overlay">
+      <div class="cs2-modal">
+        <div class="cs2-title">COUNTER-STRIKE 2 <span class="badge">WEB 1:1</span></div>
+        <p class="cs2-subtitle">Three.js + TypeScript + Rapier 3D Fizikasi</p>
+
+        <div class="menu-section">
+          <label>XARITA TANLASH (MAP):</label>
+          <div class="select-group" id="map-select">
+            <button class="menu-btn active" data-map="dust2">de_dust2 (Dust II)</button>
+            <button class="menu-btn" data-map="tashkent">de_tashkent (Toshkent Teleminorasi)</button>
+          </div>
+        </div>
+
+        <div class="menu-section">
+          <label>BOTLAR QIYINLIK DARAJASI (BOT LEVEL):</label>
+          <div class="select-group" id="bot-diff-select">
+            <button class="menu-btn" data-diff="easy">Oson (Easy)</button>
+            <button class="menu-btn active" data-diff="medium">O'rtacha (Medium)</button>
+            <button class="menu-btn" data-diff="hard">Qiyin (Hard)</button>
+            <button class="menu-btn" data-diff="expert">Ekspert (1-Shot HS)</button>
+          </div>
+        </div>
+
+        <div class="menu-section">
+          <label>BOTLAR SONI:</label>
+          <div class="select-group" id="bot-count-select">
+            <button class="menu-btn" data-count="2">2 Bot</button>
+            <button class="menu-btn active" data-count="4">4 Bot</button>
+            <button class="menu-btn" data-count="8">8 Bot</button>
+          </div>
+        </div>
+
+        <div class="menu-section">
+          <label>SICHQONCHA SOZLAMALARI (AIM & SHOOT):</label>
+          <div class="select-group" id="mouse-mode-select">
+            <button class="menu-btn active" data-mode="standard">Standart (Chap=Otish, O'ng=Zoom)</button>
+            <button class="menu-btn" data-mode="inverted">Teskari (Chap=Zoom, O'ng=Otish)</button>
+          </div>
+        </div>
+
+        <button id="start-game-btn" class="cs2-primary-btn">O'YINNI BOSHLASH (START)</button>
+
+        <div class="cs2-controls-guide">
+          <h4>Boshqaruv tugmalari (CS2 1:1):</h4>
+          <ul>
+            <li><b>W, A, S, D</b> — Yugurish (Counter-strafing)</li>
+            <li><b>Space</b> — Sakrash (Jump / Bunny Hop)</li>
+            <li><b>Ctrl</b> — Cho'qqayish (Crouch)</li>
+            <li><b>Shift</b> — Sekin yurish (Walk)</li>
+            <li><b>Sichqoncha Chap tugmasi</b> — O't ochish (yoki teskari rejimda Zoom)</li>
+            <li><b>Sichqoncha O'ng tugmasi (yoki Z / V)</b> — Barcha qurollarda YA Q I N L A S H T I R I S H (Zoom / ADS)</li>
+            <li><b>R</b> — O'qni yangilash (Reload)</li>
+            <li><b>1, 2, 3</b> — Qurollarni almashtirish (Asosiy, Pistol, Pichoq)</li>
+            <li><b>B</b> — Qurollar do'koni (Buy Menu)</li>
+            <li><b>ESC</b> — Menyuni ochish / qulflash</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Buy Menu Modal ('B' key) -->
+    <div id="buy-menu" class="hidden">
+      <div class="buy-modal">
+        <h3>CS2 QUROLLAR DUKONI (BUY MENU)</h3>
+        <div class="weapons-grid">
+          <button class="weapon-buy-btn" data-weapon="ak47">
+            <span class="w-name">AK-47</span>
+            <span class="w-type">Rifle (Avtomat)</span>
+            <span class="w-price">$2700</span>
+          </button>
+          <button class="weapon-buy-btn" data-weapon="m4a1">
+            <span class="w-name">M4A1-S</span>
+            <span class="w-type">Rifle (Susturkichli)</span>
+            <span class="w-price">$2900</span>
+          </button>
+          <button class="weapon-buy-btn" data-weapon="awp">
+            <span class="w-name">AWP</span>
+            <span class="w-type">Sniper Rifle (1-Hit Kill)</span>
+            <span class="w-price">$4750</span>
+          </button>
+          <button class="weapon-buy-btn" data-weapon="deagle">
+            <span class="w-name">Desert Eagle</span>
+            <span class="w-type">Pistol (Heavy Handgun)</span>
+            <span class="w-price">$700</span>
+          </button>
+          <button class="weapon-buy-btn" data-weapon="knife">
+            <span class="w-name">Karambit Knife</span>
+            <span class="w-type">Melee (Speed 250 u/s)</span>
+            <span class="w-price">BEPUL</span>
+          </button>
+        </div>
+        <p class="hint">Yopish uchun yana 'B' yoki 'ESC' tugmasini bosing</p>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
