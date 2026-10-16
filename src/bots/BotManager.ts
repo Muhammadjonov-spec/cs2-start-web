@@ -339,10 +339,14 @@ export class Bot {
     return false;
   }
 
+  public isRoundMode: boolean = true;
+
   private die() {
     this.isAlive = false;
     this.state = 'dead';
     this.respawnTimer = 4.0;
+    this.muzzleFlashMesh.visible = false;
+    this.muzzleFlashLight.intensity = 0;
 
     this.group.rotation.x = -Math.PI / 2;
     this.group.position.y = this.position.y + 0.15;
@@ -366,6 +370,26 @@ export class Bot {
     this.snapToGround();
   }
 
+  // Reset bot for new CS2 round at spawn point
+  public resetForNewRound(spawnPos: THREE.Vector3, waypoints: THREE.Vector3[]) {
+    this.isAlive = true;
+    this.health = 100;
+    this.magazineAmmo = 30;
+    this.isReloading = false;
+    this.burstShotsRemaining = 0;
+    this.burstCooldownTimer = 0;
+    this.shotCadenceTimer = 0;
+    this.state = 'patrol';
+    this.currentWaypointIndex = 0;
+    this.spawnOrigin.copy(spawnPos);
+    this.position.copy(spawnPos);
+    this.targetWaypoints = waypoints;
+    this.group.rotation.set(0, 0, 0);
+    this.group.position.copy(this.position);
+    (this.vestMesh.material as THREE.MeshStandardMaterial).color.setHex(0x181c22);
+    this.snapToGround();
+  }
+
   private updateColliderPositions(pos: THREE.Vector3) {
     const crouchOffset = this.isCrouching ? -0.35 : 0;
     this.headCollider?.parent()?.setTranslation({ x: pos.x, y: pos.y + 1.57 + crouchOffset, z: pos.z }, true);
@@ -375,9 +399,11 @@ export class Bot {
 
   public update(dt: number, playerPos: THREE.Vector3) {
     if (!this.isAlive) {
-      this.respawnTimer -= dt;
-      if (this.respawnTimer <= 0) {
-        this.respawn();
+      if (!this.isRoundMode) {
+        this.respawnTimer -= dt;
+        if (this.respawnTimer <= 0) {
+          this.respawn();
+        }
       }
       return;
     }
@@ -761,6 +787,36 @@ export class BotManager {
   public setDifficulty(diff: BotDifficulty) {
     for (const bot of this.bots) {
       bot.setDifficulty(diff);
+    }
+  }
+
+  public getAliveBotsCount(): number {
+    return this.bots.filter((b) => b.isAlive).length;
+  }
+
+  public setRoundMode(isRoundMode: boolean) {
+    for (const bot of this.bots) {
+      bot.isRoundMode = isRoundMode;
+    }
+  }
+
+  public resetAllBotsForNewRound(spawnPoints: THREE.Vector3[], botRoutes?: THREE.Vector3[][]) {
+    for (let i = 0; i < this.bots.length; i++) {
+      const bot = this.bots[i];
+      const spawn = spawnPoints[i % spawnPoints.length];
+      let waypoints: THREE.Vector3[] = [];
+
+      if (botRoutes && botRoutes[i % botRoutes.length] && botRoutes[i % botRoutes.length].length > 0) {
+        waypoints = botRoutes[i % botRoutes.length].map((pt) => pt.clone());
+      } else {
+        waypoints = [
+          spawn.clone(),
+          spawnPoints[(i + 1) % spawnPoints.length].clone(),
+          spawnPoints[(i + 2) % spawnPoints.length].clone(),
+        ];
+      }
+
+      bot.resetForNewRound(spawn, waypoints);
     }
   }
 

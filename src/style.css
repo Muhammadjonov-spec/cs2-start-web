@@ -1,31 +1,38 @@
-@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700;800&family=Rajdhani:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700;800&family=Rajdhani:wght@600;700;800&display=swap');
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 body, html {
   width: 100%;
   height: 100%;
+  margin: 0;
+  padding: 0;
   overflow: hidden;
   background-color: #0b0d12;
-  font-family: 'Rajdhani', -apple-system, sans-serif;
+  font-family: 'Rajdhani', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: #ffffff;
 }
 
 #game-container {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
 #three-canvas {
   width: 100%;
   height: 100%;
   display: block;
+  touch-action: none;
 }
 
 /* Dynamic CS2 Crosshair */
@@ -85,8 +92,7 @@ body, html {
 /* Sniper Scope Overlay */
 #sniper-scope {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
@@ -118,29 +124,31 @@ body, html {
   background: rgba(0, 0, 0, 0.85);
 }
 
-/* HUD System */
+/* =========================================================
+   CS2 PANORAMA HUD SYSTEM (High Contrast & Responsive)
+   ========================================================= */
 #hud {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 10;
+  z-index: 30;
   font-family: 'Chakra Petch', sans-serif;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
-/* Radar (Minimap) */
+/* Top Left: Radar (Minimap) */
 #radar-container {
   position: absolute;
-  top: 24px;
-  left: 24px;
-  width: 170px;
-  height: 170px;
-  background: radial-gradient(circle, rgba(16, 22, 28, 0.85) 0%, rgba(8, 12, 16, 0.95) 100%);
-  border: 2px solid rgba(220, 160, 50, 0.5);
+  top: clamp(8px, 2vw, 20px);
+  left: clamp(8px, 2vw, 20px);
+  width: clamp(90px, 13vw, 150px);
+  height: clamp(90px, 13vw, 150px);
+  background: radial-gradient(circle, rgba(16, 22, 28, 0.94) 0%, rgba(8, 12, 16, 0.98) 100%);
+  border: 2px solid rgba(220, 160, 50, 0.65);
   border-radius: 50%;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.85);
   overflow: hidden;
 }
 
@@ -153,46 +161,49 @@ body, html {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   background-color: #00ff88;
   border: 2px solid #ffffff;
   border-radius: 50%;
   transform: translate(-50%, -50%);
+  box-shadow: 0 0 6px #00ff88;
 }
 
 .radar-label {
   position: absolute;
-  bottom: 6px;
+  bottom: 4px;
   width: 100%;
   text-align: center;
-  font-size: 11px;
-  font-weight: 700;
+  font-size: clamp(8px, 1vw, 11px);
+  font-weight: 800;
   color: #dca032;
   letter-spacing: 1px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
 }
 
-/* Top Center Match Header */
+/* Top Center: Match Header */
 #match-header {
   position: absolute;
-  top: 16px;
+  top: clamp(6px, 1.8vw, 16px);
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 16px;
-  background: rgba(12, 16, 22, 0.85);
-  padding: 8px 24px;
+  gap: clamp(8px, 1.5vw, 16px);
+  background: rgba(12, 16, 24, 0.94);
+  padding: 5px clamp(10px, 1.8vw, 20px);
   border-radius: 6px;
   border-bottom: 2px solid #dca032;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
 }
 
 .team-score {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 22px;
+  gap: 6px;
+  font-size: clamp(17px, 2.2vw, 24px);
   font-weight: 800;
 }
 
@@ -204,37 +215,105 @@ body, html {
   color: #5c93ff;
 }
 
+.team-name {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.match-timer-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.55);
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.timer-badge-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: #a0aec0;
+  letter-spacing: 1px;
+}
+
 #match-timer {
-  font-size: 20px;
-  font-weight: 700;
+  font-size: clamp(15px, 2vw, 21px);
+  font-weight: 800;
   color: #f1f1f1;
-  letter-spacing: 2px;
-  min-width: 60px;
+  letter-spacing: 1.5px;
+  min-width: 48px;
   text-align: center;
+}
+
+/* Top Right: Quick Actions & Killfeed */
+#hud-top-right {
+  position: absolute;
+  top: clamp(8px, 2vw, 20px);
+  right: clamp(8px, 2vw, 20px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+#hud-quick-actions {
+  display: flex;
+  gap: 6px;
+  pointer-events: auto;
+}
+
+.hud-action-btn {
+  background: rgba(15, 20, 28, 0.9);
+  border: 1px solid rgba(224, 159, 62, 0.45);
+  color: #e09f3e;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: clamp(10px, 1.1vw, 12px);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  transition: all 0.15s;
+}
+
+.hud-action-btn:hover, .hud-action-btn:active {
+  background: rgba(224, 159, 62, 0.25);
+  border-color: #e09f3e;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.btn-tag {
+  font-size: 9px;
+  padding: 1px 4px;
+  background: rgba(224, 159, 62, 0.2);
+  border-radius: 2px;
 }
 
 /* Killfeed */
 #killfeed {
-  position: absolute;
-  top: 24px;
-  right: 24px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   align-items: flex-end;
 }
 
 .kill-item {
-  background: rgba(15, 20, 26, 0.88);
-  padding: 6px 14px;
+  background: rgba(14, 18, 26, 0.94);
+  padding: 4px 10px;
   border-left: 3px solid #e09f3e;
   border-radius: 4px;
-  font-size: 14px;
+  font-size: clamp(10px, 1.1vw, 12px);
   font-weight: 700;
   display: flex;
   align-items: center;
-  gap: 8px;
-  animation: slideIn 0.3s ease-out;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  animation: slideIn 0.25s ease-out;
 }
 
 .kill-killer {
@@ -243,14 +322,17 @@ body, html {
 
 .kill-weapon {
   color: #ffb833;
-  font-size: 12px;
-  padding: 2px 6px;
-  background: rgba(255, 255, 255, 0.08);
+  font-size: 10px;
+  padding: 1px 4px;
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 3px;
 }
 
 .kill-hs {
   color: #ff3333;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
 }
 
 .kill-victim {
@@ -258,111 +340,185 @@ body, html {
 }
 
 @keyframes slideIn {
-  from { opacity: 0; transform: translateX(30px); }
+  from { opacity: 0; transform: translateX(25px); }
   to { opacity: 1; transform: translateX(0); }
 }
 
-/* Status (Health & Armor) */
+/* Status: Health & Armor */
 #status-container {
   position: absolute;
-  bottom: 28px;
-  left: 28px;
+  bottom: clamp(10px, 2.5vw, 24px);
+  left: clamp(10px, 2.5vw, 24px);
   display: flex;
-  gap: 16px;
+  gap: clamp(8px, 1.4vw, 14px);
 }
 
 .stat-box {
+  background: rgba(12, 16, 24, 0.94);
+  padding: 5px clamp(10px, 1.4vw, 16px);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+  min-width: clamp(75px, 10vw, 110px);
+  backdrop-filter: blur(4px);
+}
+
+.stat-content {
   display: flex;
   align-items: center;
-  gap: 10px;
-  background: rgba(14, 18, 24, 0.82);
-  padding: 8px 18px;
-  border-radius: 6px;
-  border-bottom: 3px solid #ffffff;
-  font-size: 30px;
+  gap: 6px;
+  font-size: clamp(20px, 2.6vw, 30px);
   font-weight: 800;
-  text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+  line-height: 1;
+}
+
+.stat-badge-text {
+  font-size: clamp(11px, 1.3vw, 13px);
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.stat-bar-track {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+  margin-top: 5px;
+  overflow: hidden;
 }
 
 #health-box {
-  border-color: #ff3b30;
+  border-left: 4px solid #00ff88;
+  color: #00ff88;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.4);
 }
 
-#health-box .stat-icon {
+#health-box .stat-badge-text {
+  color: #00ff88;
+}
+
+#health-box.low-hp {
+  border-left-color: #ff3b30;
   color: #ff3b30;
-  font-size: 22px;
+  animation: pulseLowHp 0.8s infinite alternate;
+}
+
+#health-box.low-hp .stat-badge-text {
+  color: #ff3b30;
+}
+
+@keyframes pulseLowHp {
+  0% { transform: scale(1); box-shadow: 0 0 15px rgba(255, 59, 48, 0.4); }
+  100% { transform: scale(1.04); box-shadow: 0 0 25px rgba(255, 59, 48, 0.8); }
+}
+
+#health-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ff88, #2ecc71);
+  transition: width 0.2s ease-out;
 }
 
 #armor-box {
-  border-color: #5ac8fa;
+  border-left: 4px solid #5ac8fa;
+  color: #5ac8fa;
+  text-shadow: 0 0 10px rgba(90, 200, 250, 0.4);
 }
 
-#armor-box .stat-icon {
+#armor-box .stat-badge-text {
   color: #5ac8fa;
-  font-size: 22px;
+}
+
+#armor-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #5ac8fa, #0984e3);
+  transition: width 0.2s ease-out;
 }
 
 /* Inventory Bar */
 #inventory-bar {
   position: absolute;
-  bottom: 28px;
+  bottom: clamp(10px, 2.5vw, 24px);
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 .inv-slot {
-  background: rgba(15, 20, 26, 0.7);
-  padding: 6px 14px;
+  background: rgba(14, 18, 26, 0.9);
+  padding: 5px 12px;
   border-radius: 4px;
-  font-size: 13px;
+  font-size: clamp(11px, 1.2vw, 13px);
   font-weight: 700;
-  color: #88909c;
+  color: #7f8c9b;
   border-bottom: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.slot-num {
+  font-weight: 800;
+  color: #a0aec0;
 }
 
 .inv-slot.active {
-  background: rgba(224, 159, 62, 0.25);
+  background: rgba(224, 159, 62, 0.22);
   color: #e09f3e;
   border-bottom: 2px solid #e09f3e;
+  box-shadow: 0 0 12px rgba(224, 159, 62, 0.35);
 }
 
-/* Ammo Container */
+.inv-slot.active .slot-num {
+  color: #e09f3e;
+}
+
+/* Ammo & Reserve Container */
 #ammo-container {
   position: absolute;
-  bottom: 28px;
-  right: 28px;
+  bottom: clamp(10px, 2.5vw, 24px);
+  right: clamp(10px, 2.5vw, 24px);
   text-align: right;
-  background: rgba(14, 18, 24, 0.82);
-  padding: 8px 20px;
+  background: rgba(12, 16, 24, 0.94);
+  padding: 6px clamp(12px, 1.8vw, 18px);
   border-radius: 6px;
-  border-bottom: 3px solid #e09f3e;
+  border-right: 4px solid #e09f3e;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
 }
 
 #weapon-display-name {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: clamp(11px, 1.3vw, 13px);
+  font-weight: 800;
   color: #e09f3e;
   letter-spacing: 1px;
 }
 
 #ammo-numbers {
-  font-size: 34px;
+  font-size: clamp(24px, 3.2vw, 34px);
   font-weight: 800;
   line-height: 1.1;
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.35);
 }
 
 .ammo-separator {
   color: #667080;
-  font-size: 24px;
+  font-size: clamp(16px, 2.2vw, 22px);
   margin: 0 4px;
 }
 
 #reserve-ammo {
   color: #8fa0b5;
-  font-size: 22px;
+  font-size: clamp(16px, 2.2vw, 22px);
+}
+
+.ammo-type-hint {
+  font-size: 9px;
+  color: #718096;
+  letter-spacing: 0.5px;
 }
 
 /* Hitmarker & Damage effects */
@@ -371,247 +527,258 @@ body, html {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: #ff3333;
-  font-size: 24px;
+  color: #ffffff;
+  font-size: 26px;
   font-weight: bold;
   pointer-events: none;
   z-index: 22;
-  text-shadow: 0 0 4px #000;
+  text-shadow: 0 0 6px #000;
 }
 
 #damage-flash {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle, transparent 50%, rgba(220, 20, 20, 0.45) 100%);
+  background: radial-gradient(circle, transparent 40%, rgba(220, 20, 20, 0.55) 100%);
   pointer-events: none;
   z-index: 18;
   transition: opacity 0.2s ease-out;
 }
 
-/* Main Menu Overlay */
-#menu-overlay {
+/* =========================================================
+   MOBILE TOUCH CONTROLS OVERLAY (Counter Mobile Layout)
+   ========================================================= */
+#touch-controls {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
-  background: rgba(7, 10, 14, 0.88);
-  backdrop-filter: blur(8px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 50;
+  pointer-events: none;
+  z-index: 35;
+  display: none;
 }
 
-.cs2-modal {
-  width: 580px;
-  background: rgba(16, 21, 28, 0.95);
-  border: 1px solid rgba(224, 159, 62, 0.3);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8), 0 0 15px rgba(224, 159, 62, 0.2);
-  border-radius: 8px;
-  padding: 28px;
-}
-
-.cs2-title {
-  font-size: 28px;
-  font-weight: 800;
-  color: #ffffff;
-  letter-spacing: 2px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.badge {
-  font-size: 12px;
-  background: #e09f3e;
-  color: #0b0d12;
-  padding: 3px 8px;
-  border-radius: 3px;
-  font-weight: 800;
-}
-
-.cs2-subtitle {
-  color: #8290a4;
-  margin-top: 4px;
-  font-size: 15px;
-}
-
-.menu-section {
-  margin-top: 20px;
-}
-
-.menu-section label {
-  display: block;
-  font-size: 13px;
-  font-weight: 700;
-  color: #e09f3e;
-  letter-spacing: 1px;
-  margin-bottom: 8px;
-}
-
-.select-group {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.menu-btn {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #d1d8e0;
-  padding: 8px 14px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 700;
-  transition: all 0.2s;
-}
-
-.menu-btn:hover {
-  background: rgba(224, 159, 62, 0.15);
-  border-color: #e09f3e;
-  color: #ffffff;
-}
-
-.menu-btn.active {
-  background: #e09f3e;
-  border-color: #e09f3e;
-  color: #0d1117;
-}
-
-.cs2-primary-btn {
-  margin-top: 24px;
-  width: 100%;
-  padding: 14px;
-  background: linear-gradient(135deg, #e09f3e 0%, #b87b22 100%);
-  border: none;
-  border-radius: 6px;
-  font-family: inherit;
-  font-size: 18px;
-  font-weight: 800;
-  color: #0d1117;
-  cursor: pointer;
-  letter-spacing: 1.5px;
-  box-shadow: 0 4px 15px rgba(224, 159, 62, 0.4);
-  transition: all 0.2s;
-}
-
-.cs2-primary-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(224, 159, 62, 0.6);
-}
-
-.cs2-controls-guide {
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  font-size: 13px;
-  color: #a4b2c4;
-}
-
-.cs2-controls-guide h4 {
-  color: #ffffff;
-  margin-bottom: 6px;
-}
-
-.cs2-controls-guide ul {
-  list-style: none;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px 12px;
-}
-
-/* Buy Menu */
-#buy-menu {
+/* Left Zone: Dynamic Floating Joystick */
+#touch-joystick-zone {
   position: absolute;
-  top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(8, 12, 16, 0.85);
-  backdrop-filter: blur(6px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 45;
+  bottom: 0;
+  width: 48%;
+  height: 75%;
+  pointer-events: auto;
+  touch-action: none;
 }
 
-.buy-modal {
-  width: 640px;
-  background: rgba(15, 20, 28, 0.96);
-  border: 1px solid #e09f3e;
-  border-radius: 8px;
-  padding: 24px;
+#touch-joystick-base {
+  position: absolute;
+  left: 100px;
+  bottom: 100px;
+  width: 116px;
+  height: 116px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(224, 159, 62, 0.12) 0%, rgba(16, 22, 32, 0.75) 100%);
+  border: 2px solid rgba(224, 159, 62, 0.5);
+  transform: translate(-50%, -50%);
+  opacity: 0.45;
+  pointer-events: none;
+  box-shadow: 0 0 16px rgba(0, 0, 0, 0.6);
+  transition: opacity 0.2s;
 }
 
-.buy-modal h3 {
-  font-size: 20px;
-  color: #e09f3e;
-  letter-spacing: 2px;
-  margin-bottom: 16px;
+#touch-joystick-thumb {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #f39c12 0%, #b8731b 100%);
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 12px rgba(243, 156, 18, 0.9);
+  pointer-events: none;
 }
 
-.weapons-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
-
-.weapon-buy-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 6px;
-  padding: 14px;
+/* Left Secondary Fire Button (Claw 3-finger layout) */
+.claw-fire-btn {
+  position: absolute;
+  left: 20px;
+  top: 38%;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(231, 76, 60, 0.35);
+  border: 2px solid #e74c3c;
   color: #ffffff;
-  cursor: pointer;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 14px rgba(231, 76, 60, 0.45);
+  backdrop-filter: blur(4px);
+}
+
+.claw-fire-btn:active, .claw-fire-btn.active {
+  background: #e74c3c;
+  transform: scale(0.92);
+}
+
+/* Right Zone: Touch Swipe Aim */
+#touch-look-zone {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 52%;
+  height: 100%;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+/* Right Action Controls Cluster */
+#touch-right-controls {
+  position: absolute;
+  right: clamp(10px, 2.5vw, 24px);
+  bottom: clamp(10px, 2.5vw, 24px);
+  pointer-events: auto;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  text-align: left;
-  font-family: inherit;
-  transition: all 0.2s;
+  align-items: flex-end;
+  gap: 10px;
+  touch-action: none;
 }
 
-.weapon-buy-btn:hover {
-  background: rgba(224, 159, 62, 0.2);
+/* Quick Weapon Slots on Touch */
+#touch-weapon-slots {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.touch-slot-btn {
+  background: rgba(16, 22, 32, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #cbd5e0;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 11px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  touch-action: manipulation;
+}
+
+.touch-slot-btn.active {
+  background: #e09f3e;
+  border-color: #e09f3e;
+  color: #0b0d12;
+}
+
+/* Action Buttons Grid (Ergonomic Counter Mobile Layout) */
+#touch-action-cluster {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  grid-template-rows: repeat(2, auto);
+  gap: 12px;
+  align-items: center;
+  justify-items: center;
+}
+
+.touch-action-btn {
+  width: clamp(52px, 8vw, 62px);
+  height: clamp(52px, 8vw, 62px);
+  border-radius: 50%;
+  background: rgba(18, 24, 34, 0.88);
+  border: 2px solid rgba(224, 159, 62, 0.6);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  touch-action: none;
+  transition: transform 0.08s, background-color 0.15s;
+}
+
+.touch-action-btn:active, .touch-action-btn.active {
+  transform: scale(0.92);
+  background: rgba(224, 159, 62, 0.35);
   border-color: #e09f3e;
 }
 
-.w-name {
-  font-size: 18px;
-  font-weight: 800;
+.btn-action-name {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+
+/* Primary Fire Button (Large Prominent Red) */
+.fire-btn {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  width: clamp(74px, 11vw, 88px);
+  height: clamp(74px, 11vw, 88px);
+  background: radial-gradient(circle, #e74c3c 0%, #c0392b 100%);
+  border: 3px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 22px rgba(231, 76, 60, 0.85);
+}
+
+.fire-btn:active, .fire-btn.active {
+  transform: scale(0.92);
+  box-shadow: 0 0 32px rgba(231, 76, 60, 1);
+  background: radial-gradient(circle, #ff6b81 0%, #e84118 100%);
+}
+
+.main-fire-text {
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+}
+
+/* Scope / Aim Button */
+.scope-btn {
+  border-color: #5ac8fa;
+  color: #5ac8fa;
+}
+
+.scope-btn.active {
+  background: rgba(90, 200, 250, 0.35);
+  border-color: #5ac8fa;
   color: #ffffff;
 }
 
-.w-type {
-  font-size: 12px;
-  color: #8c9cb0;
+/* Touch Utilities (Buy & Menu) */
+#touch-utility-cluster {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
 }
 
-.w-price {
-  font-size: 14px;
-  font-weight: 700;
-  color: #2ed573;
-  margin-top: 4px;
+.touch-util-btn {
+  background: rgba(16, 22, 32, 0.9);
+  border: 1px solid rgba(224, 159, 62, 0.5);
+  color: #e09f3e;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 11px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  touch-action: manipulation;
 }
 
-.hint {
-  margin-top: 16px;
-  font-size: 12px;
-  color: #7b889b;
-  text-align: center;
+.touch-util-btn:active {
+  background: rgba(224, 159, 62, 0.3);
+  transform: scale(0.95);
 }
 
-.hidden {
-  display: none !important;
-}
-
-/* CS2 Round End Victory / Defeat Banner */
+/* =========================================================
+   CS2 ROUND END BANNER
+   ========================================================= */
 #round-end-banner {
   position: absolute;
   top: 18%;
@@ -631,21 +798,21 @@ body, html {
   background: linear-gradient(180deg, rgba(16, 22, 30, 0.96) 0%, rgba(8, 12, 18, 0.94) 100%);
   border: 2px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
-  padding: 24px 60px;
+  padding: clamp(16px, 2.5vw, 24px) clamp(24px, 5vw, 60px);
   text-align: center;
   box-shadow: 0 15px 45px rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(8px);
 }
 
 .round-end-badge {
-  font-size: 13px;
+  font-size: clamp(11px, 1.3vw, 13px);
   font-weight: 800;
   letter-spacing: 4px;
   margin-bottom: 6px;
 }
 
 .round-end-title {
-  font-size: 42px;
+  font-size: clamp(24px, 4vw, 40px);
   font-weight: 900;
   letter-spacing: 3px;
   text-transform: uppercase;
@@ -653,10 +820,10 @@ body, html {
 }
 
 .round-end-reason {
-  font-size: 15px;
+  font-size: clamp(12px, 1.4vw, 15px);
   color: #a0aec0;
   letter-spacing: 1px;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 
 .round-score-display {
@@ -685,7 +852,7 @@ body, html {
 }
 
 .round-score-val {
-  font-size: 32px;
+  font-size: clamp(24px, 3.2vw, 32px);
   font-weight: 900;
 }
 
@@ -695,7 +862,6 @@ body, html {
   opacity: 0.5;
 }
 
-/* CT Win Theme */
 #round-end-banner.ct-win .round-end-content {
   border-color: #5ac8fa;
   box-shadow: 0 0 40px rgba(90, 200, 250, 0.35);
@@ -710,7 +876,6 @@ body, html {
   text-shadow: 0 0 20px rgba(90, 200, 250, 0.8);
 }
 
-/* T Win Theme */
 #round-end-banner.t-win .round-end-content {
   border-color: #e09f3e;
   box-shadow: 0 0 40px rgba(224, 159, 62, 0.35);
@@ -723,4 +888,331 @@ body, html {
 #round-end-banner.t-win .round-end-title {
   color: #ffffff;
   text-shadow: 0 0 20px rgba(224, 159, 62, 0.8);
+}
+
+/* =========================================================
+   START / PAUSE MENU OVERLAY (Fully Scrollable on Mobile)
+   ========================================================= */
+#menu-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(7, 10, 14, 0.94);
+  backdrop-filter: blur(8px);
+  display: block; /* Native block layout enables continuous vertical scrolling */
+  overflow-y: scroll;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y !important;
+  z-index: 70;
+  padding: 16px;
+}
+
+.cs2-modal {
+  margin: 16px auto 40px auto;
+  width: 100%;
+  max-width: 600px;
+  background: rgba(16, 21, 28, 0.98);
+  border: 1px solid rgba(224, 159, 62, 0.45);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.85), 0 0 20px rgba(224, 159, 62, 0.2);
+  border-radius: 8px;
+  padding: clamp(16px, 3vw, 26px);
+  touch-action: pan-y !important;
+}
+
+.cs2-title {
+  font-size: clamp(20px, 3vw, 26px);
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 2px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.badge {
+  font-size: 11px;
+  background: #e09f3e;
+  color: #0b0d12;
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-weight: 800;
+}
+
+.cs2-subtitle {
+  color: #8290a4;
+  margin-top: 4px;
+  font-size: clamp(12px, 1.3vw, 14px);
+}
+
+.menu-section {
+  margin-top: 16px;
+}
+
+.menu-section label {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  color: #e09f3e;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.select-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.menu-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #d1d8e0;
+  padding: 8px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: clamp(12px, 1.3vw, 14px);
+  font-weight: 700;
+  transition: all 0.2s;
+  touch-action: manipulation;
+}
+
+.menu-btn:hover {
+  background: rgba(224, 159, 62, 0.15);
+  border-color: #e09f3e;
+  color: #ffffff;
+}
+
+.menu-btn.active {
+  background: #e09f3e;
+  border-color: #e09f3e;
+  color: #0d1117;
+}
+
+.cs2-primary-btn {
+  margin-top: 22px;
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #e09f3e 0%, #b87b22 100%);
+  border: none;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: clamp(16px, 2vw, 18px);
+  font-weight: 800;
+  color: #0d1117;
+  cursor: pointer;
+  letter-spacing: 1.5px;
+  box-shadow: 0 4px 15px rgba(224, 159, 62, 0.4);
+  transition: all 0.2s;
+  touch-action: manipulation;
+}
+
+.cs2-primary-btn:hover, .cs2-primary-btn:active {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(224, 159, 62, 0.6);
+}
+
+.cs2-controls-guide {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 12px;
+  color: #a4b2c4;
+}
+
+.cs2-controls-guide h4 {
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.guide-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.guide-cols ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* =========================================================
+   BUY MENU MODAL
+   ========================================================= */
+#buy-menu {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(8, 12, 16, 0.92);
+  backdrop-filter: blur(6px);
+  display: block;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y !important;
+  z-index: 65;
+  padding: 16px;
+}
+
+.buy-modal {
+  margin: 20px auto 40px auto;
+  width: 100%;
+  max-width: 640px;
+  background: rgba(15, 20, 28, 0.98);
+  border: 1px solid #e09f3e;
+  border-radius: 8px;
+  padding: clamp(16px, 3vw, 24px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.85);
+  touch-action: pan-y !important;
+}
+
+.buy-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.buy-modal h3 {
+  font-size: clamp(16px, 2.2vw, 20px);
+  color: #e09f3e;
+  letter-spacing: 2px;
+}
+
+.close-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.close-btn:hover {
+  background: #ff4757;
+  border-color: #ff4757;
+}
+
+.weapons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.weapon-buy-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 12px;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+  font-family: inherit;
+  transition: all 0.2s;
+  touch-action: manipulation;
+}
+
+.weapon-buy-btn:hover, .weapon-buy-btn:active {
+  background: rgba(224, 159, 62, 0.2);
+  border-color: #e09f3e;
+}
+
+.w-name {
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.w-type {
+  font-size: 11px;
+  color: #8c9cb0;
+}
+
+.w-price {
+  font-size: 13px;
+  font-weight: 700;
+  color: #2ed573;
+  margin-top: 4px;
+}
+
+.hint {
+  margin-top: 14px;
+  font-size: 11px;
+  color: #7b889b;
+  text-align: center;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* =========================================================
+   RESPONSIVE DESIGN FOR SMARTPHONES (Counter Mobile HUD)
+   ========================================================= */
+@media (max-width: 900px), (max-height: 550px), (pointer: coarse) {
+  /* Move Health & Armor to bottom-center-left so left joystick is 100% unobstructed */
+  #status-container {
+    bottom: 8px;
+    left: clamp(110px, 22vw, 190px);
+    gap: 6px;
+  }
+
+  .stat-box {
+    min-width: 70px;
+    padding: 3px 8px;
+  }
+
+  .stat-content {
+    font-size: 20px;
+  }
+
+  /* Move Ammo to bottom-center-right so right action buttons are 100% unobstructed */
+  #ammo-container {
+    bottom: 8px;
+    right: clamp(165px, 26vw, 240px);
+    padding: 3px 10px;
+  }
+
+  #ammo-numbers {
+    font-size: 22px;
+  }
+
+  #inventory-bar {
+    bottom: 8px;
+  }
+
+  .inv-slot {
+    padding: 3px 8px;
+    font-size: 10px;
+  }
+
+  #touch-right-controls {
+    right: 8px;
+    bottom: 8px;
+  }
+
+  #touch-joystick-base {
+    width: 96px;
+    height: 96px;
+  }
+
+  #touch-joystick-thumb {
+    width: 38px;
+    height: 38px;
+    margin: -19px 0 0 -19px;
+  }
+
+  .guide-cols {
+    grid-template-columns: 1fr;
+  }
 }

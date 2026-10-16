@@ -21,6 +21,11 @@ export class PlayerController {
   public isCrouching: boolean = false;
   public isWalking: boolean = false;
 
+  // Mobile Touch Inputs
+  public touchMoveVector: { x: number; y: number } = { x: 0, y: 0 };
+  public touchJumpPressed: boolean = false;
+  public touchCrouchActive: boolean = false;
+
   // View Bobbing & Footsteps
   private bobTimer: number = 0;
   public currentBobOffset: THREE.Vector3 = new THREE.Vector3();
@@ -81,6 +86,13 @@ export class PlayerController {
     });
   }
 
+  public addLookDelta(dx: number, dy: number) {
+    this.yaw -= dx;
+    this.pitch -= dy;
+    // Clamp pitch (-89 to +89 degrees)
+    this.pitch = Math.max(-Math.PI / 2 + 0.02, Math.min(Math.PI / 2 - 0.02, this.pitch));
+  }
+
   public getColliderHandle(): number {
     return this.collider?.handle ?? -1;
   }
@@ -99,7 +111,7 @@ export class PlayerController {
     let baseSpeed = currentWeaponSpeed * 0.0254; // Convert CS units to m/s
     if (isScoped) baseSpeed *= 0.5;
 
-    this.isCrouching = !!(this.keys['ControlLeft'] || this.keys['ControlRight']);
+    this.isCrouching = !!(this.keys['ControlLeft'] || this.keys['ControlRight'] || this.touchCrouchActive);
     this.isWalking = !!(this.keys['ShiftLeft'] || this.keys['ShiftRight']);
 
     let targetSpeed = baseSpeed;
@@ -113,12 +125,29 @@ export class PlayerController {
     const targetHeight = this.isCrouching ? this.CROUCH_HEIGHT : this.STAND_HEIGHT;
     this.currentEyeHeight = THREE.MathUtils.lerp(this.currentEyeHeight, targetHeight, dt * 14);
 
-    // 3. Movement Direction from WASD
+    // 3. Movement Direction from WASD + Virtual Touch Joystick
     const moveDir = new THREE.Vector3();
     if (this.keys['KeyW']) moveDir.z -= 1;
     if (this.keys['KeyS']) moveDir.z += 1;
     if (this.keys['KeyA']) moveDir.x -= 1;
     if (this.keys['KeyD']) moveDir.x += 1;
+
+    // Analog virtual joystick input (Counter Mobile / Standoff 2 analog response)
+    const touchMag = Math.sqrt(this.touchMoveVector.x ** 2 + this.touchMoveVector.y ** 2);
+    if (touchMag > 0.08) {
+      moveDir.x += this.touchMoveVector.x;
+      moveDir.z += this.touchMoveVector.y;
+
+      if (!this.isCrouching && !this.isWalking) {
+        if (touchMag < 0.65) {
+          // Slow tactical walk on light drag
+          targetSpeed = baseSpeed * (0.35 + touchMag * 0.45);
+        } else {
+          // Full run on full push
+          targetSpeed = baseSpeed;
+        }
+      }
+    }
 
     if (moveDir.lengthSq() > 0) {
       moveDir.normalize();
@@ -147,9 +176,10 @@ export class PlayerController {
     const gravity = -20.32; // Snappy CS2 gravity
     if (this.isGrounded) {
       if (this.velocity.y < 0) this.velocity.y = -1.0; // Stay snapped to floor
-      if (this.keys['Space']) {
+      if (this.keys['Space'] || this.touchJumpPressed) {
         this.velocity.y = 6.2; // CS2 jump impulse
         this.isGrounded = false;
+        this.touchJumpPressed = false;
       }
     } else {
       this.velocity.y += gravity * dt;

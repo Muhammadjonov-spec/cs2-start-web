@@ -2,13 +2,16 @@
 <html lang="uz">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#0b0d12" />
   <title>CS2 Web 3D - 1:1 Counter-Strike 2 Simulation</title>
-  <script type="module" crossorigin src="/assets/index-BcHQuOC7.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-48AZG_Nz.css">
+  <script type="module" crossorigin src="/assets/index-BnpUlunw.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-D4nHtrQ8.css">
 </head>
 <body>
-  <!-- 3D Render Canvas -->
+  <!-- 3D Render Canvas Container -->
   <div id="game-container">
     <canvas id="three-canvas"></canvas>
 
@@ -28,7 +31,7 @@
       <div class="scope-vignette"></div>
     </div>
 
-    <!-- CS2 Panorama HUD -->
+    <!-- CS2 Panorama HUD System -->
     <div id="hud">
       <!-- Radar / Minimap (Top Left) -->
       <div id="radar-container">
@@ -43,36 +46,72 @@
           <span class="team-name">T</span>
           <span id="score-t">0</span>
         </div>
-        <div id="match-timer">10:00</div>
+        <div class="match-timer-badge">
+          <span class="timer-badge-label">TIME</span>
+          <div id="match-timer">01:55</div>
+        </div>
         <div class="team-score ct-team">
           <span id="score-ct">0</span>
           <span class="team-name">CT</span>
         </div>
       </div>
 
-      <!-- Killfeed (Top Right) -->
-      <div id="killfeed"></div>
+      <!-- Top Right: Quick Actions & Killfeed -->
+      <div id="hud-top-right">
+        <div id="hud-quick-actions">
+          <button id="btn-quick-buy" class="hud-action-btn" title="Qurol Sotib Olish (B)">
+            <span class="btn-tag">BUY</span> DO'KON
+          </button>
+          <button id="btn-quick-fs" class="hud-action-btn" title="Butun Ekran">
+            <span class="btn-tag">FULL</span> EKRAN
+          </button>
+          <button id="btn-quick-menu" class="hud-action-btn" title="Menyu (ESC)">
+            <span class="btn-tag">ESC</span> MENYU
+          </button>
+        </div>
+        <div id="killfeed"></div>
+      </div>
 
-      <!-- Bottom Left: Health & Armor -->
+      <!-- Health & Armor Status -->
       <div id="status-container">
         <div class="stat-box" id="health-box">
-          <span class="stat-icon">✚</span>
-          <span id="health-val">100</span>
+          <div class="stat-content">
+            <span class="stat-badge-text">HP</span>
+            <span id="health-val">100</span>
+          </div>
+          <div class="stat-bar-track">
+            <div id="health-bar-fill" style="width: 100%;"></div>
+          </div>
         </div>
+
         <div class="stat-box" id="armor-box">
-          <span class="stat-icon">🛡</span>
-          <span id="armor-val">100</span>
+          <div class="stat-content">
+            <span class="stat-badge-text">AP</span>
+            <span id="armor-val">100</span>
+          </div>
+          <div class="stat-bar-track">
+            <div id="armor-bar-fill" style="width: 100%;"></div>
+          </div>
         </div>
       </div>
 
-      <!-- Bottom Center: Active Weapon & Inventory -->
+      <!-- Active Weapon Inventory Bar -->
       <div id="inventory-bar">
-        <div class="inv-slot active" data-slot="1">1: AK-47</div>
-        <div class="inv-slot" data-slot="2">2: DEAGLE</div>
-        <div class="inv-slot" data-slot="3">3: KNIFE</div>
+        <div class="inv-slot active" data-slot="1">
+          <span class="slot-num">1</span>
+          <span class="slot-label">AK-47</span>
+        </div>
+        <div class="inv-slot" data-slot="2">
+          <span class="slot-num">2</span>
+          <span class="slot-label">DEAGLE</span>
+        </div>
+        <div class="inv-slot" data-slot="3">
+          <span class="slot-num">3</span>
+          <span class="slot-label">KNIFE</span>
+        </div>
       </div>
 
-      <!-- Bottom Right: Ammo & Reserve -->
+      <!-- Ammo & Reserve Display -->
       <div id="ammo-container">
         <div id="weapon-display-name">AK-47</div>
         <div id="ammo-numbers">
@@ -80,24 +119,123 @@
           <span class="ammo-separator">/</span>
           <span id="reserve-ammo">90</span>
         </div>
+        <div class="ammo-type-hint">7.62x39mm // FULL-AUTO</div>
+      </div>
+    </div>
+
+    <!-- Mobile Touch Controls Overlay (Counter Mobile / Standoff 2 Layout) -->
+    <div id="touch-controls" class="hidden">
+      <!-- Left: Dynamic Floating Analog Joystick Zone -->
+      <div id="touch-joystick-zone">
+        <div id="touch-joystick-base">
+          <div id="touch-joystick-thumb"></div>
+        </div>
+      </div>
+
+      <!-- Left Secondary Fire Button (Claw 3-finger / 4-finger fire) -->
+      <button id="btn-touch-fire-left" class="touch-action-btn claw-fire-btn" title="Left Fire">
+        <span class="btn-action-name">FIRE</span>
+      </button>
+
+      <!-- Right: Touch Swipe Look Zone -->
+      <div id="touch-look-zone"></div>
+
+      <!-- Right Action Controls Cluster -->
+      <div id="touch-right-controls">
+        <!-- Weapon Slots Quick Select -->
+        <div id="touch-weapon-slots">
+          <button id="btn-touch-slot1" class="touch-slot-btn active" data-slot="1">1: RIFLE</button>
+          <button id="btn-touch-slot2" class="touch-slot-btn" data-slot="2">2: PISTOL</button>
+          <button id="btn-touch-slot3" class="touch-slot-btn" data-slot="3">3: KNIFE</button>
+        </div>
+
+        <!-- Action Buttons Cluster (Counter Mobile Layout) -->
+        <div id="touch-action-cluster">
+          <!-- Reload -->
+          <button id="btn-touch-reload" class="touch-action-btn reload-btn" title="Reload (R)">
+            <span class="btn-action-name">RELOAD</span>
+          </button>
+
+          <!-- Scope / Aim Toggle -->
+          <button id="btn-touch-scope" class="touch-action-btn scope-btn" title="Zoom / Aim">
+            <span class="btn-action-name">ZOOM</span>
+          </button>
+
+          <!-- Jump -->
+          <button id="btn-touch-jump" class="touch-action-btn jump-btn" title="Jump (Space)">
+            <span class="btn-action-name">JUMP</span>
+          </button>
+
+          <!-- Crouch -->
+          <button id="btn-touch-crouch" class="touch-action-btn crouch-btn" title="Crouch (Ctrl)">
+            <span class="btn-action-name">CROUCH</span>
+          </button>
+
+          <!-- Primary Fire (Large button) -->
+          <button id="btn-touch-fire" class="touch-action-btn fire-btn" title="Primary Fire">
+            <span class="btn-action-name main-fire-text">FIRE</span>
+          </button>
+        </div>
+
+        <!-- Touch Utility Buttons -->
+        <div id="touch-utility-cluster">
+          <button id="btn-touch-buy" class="touch-util-btn" title="Buy Menu">DO'KON (B)</button>
+          <button id="btn-touch-menu" class="touch-util-btn" title="Pause Menu">MENYU (ESC)</button>
+        </div>
       </div>
     </div>
 
     <!-- Hitmarker / Damage Indicator -->
-    <div id="hitmarker" class="hidden">✕</div>
+    <div id="hitmarker" class="hidden">X</div>
     <div id="damage-flash" class="hidden"></div>
+
+    <!-- CS2 Round End Banner (CT Win / T Win) -->
+    <div id="round-end-banner" class="hidden">
+      <div class="round-end-content">
+        <div class="round-end-badge" id="round-winner-badge">COUNTER-TERRORISTS</div>
+        <div class="round-end-title" id="round-winner-title">ROUND WON</div>
+        <div class="round-end-reason" id="round-winner-reason">Barcha terrorchilar yo'q qilindi</div>
+        <div class="round-score-display">
+          <span class="round-team-label ct-label">CT</span>
+          <span id="banner-score-ct" class="round-score-val ct-val">0</span>
+          <span class="round-score-sep">:</span>
+          <span id="banner-score-t" class="round-score-val t-val">0</span>
+          <span class="round-team-label t-label">T</span>
+        </div>
+      </div>
+    </div>
 
     <!-- Start / Pause / Settings Menu Modal -->
     <div id="menu-overlay">
       <div class="cs2-modal">
         <div class="cs2-title">COUNTER-STRIKE 2 <span class="badge">WEB 1:1</span></div>
-        <p class="cs2-subtitle">Three.js + TypeScript + Rapier 3D Fizikasi</p>
+        <p class="cs2-subtitle">Three.js + TypeScript + Rapier 3D Fizikasi + Mobile Touch</p>
+
+        <div class="menu-section">
+          <label>BOSHQARUV REJIMI (CONTROLS):</label>
+          <div class="select-group" id="control-mode-select">
+            <button class="menu-btn active" data-ctrl="auto">Avtomatik (Smart)</button>
+            <button class="menu-btn" data-ctrl="touch">Mobil (Sensorli boshqaruv)</button>
+            <button class="menu-btn" data-ctrl="desktop">Kompyuter (Sichqoncha & WASD)</button>
+          </div>
+        </div>
 
         <div class="menu-section">
           <label>XARITA TANLASH (MAP):</label>
           <div class="select-group" id="map-select">
             <button class="menu-btn active" data-map="dust2">de_dust2 (Dust II)</button>
             <button class="menu-btn" data-map="tashkent">de_tashkent (Toshkent Teleminorasi)</button>
+          </div>
+        </div>
+
+        <div class="menu-section">
+          <label>RAUND VAQTI (ROUND TIME):</label>
+          <div class="select-group" id="round-time-select">
+            <button class="menu-btn active" data-time="115">1:55 (Real CS2)</button>
+            <button class="menu-btn" data-time="180">3:00 (Kengaytirilgan)</button>
+            <button class="menu-btn" data-time="300">5:00 (Uzoq)</button>
+            <button class="menu-btn" data-time="600">10:00 (Deathmatch)</button>
+            <button class="menu-btn" data-time="-1">Cheksiz (∞)</button>
           </div>
         </div>
 
@@ -128,22 +266,32 @@
           </div>
         </div>
 
-        <button id="start-game-btn" class="cs2-primary-btn">O'YINNI BOSHLASH (START)</button>
+        <button id="start-game-btn" class="cs2-primary-btn">O'YINNI BOSHLASH (START GAME)</button>
 
         <div class="cs2-controls-guide">
-          <h4>Boshqaruv tugmalari (CS2 1:1):</h4>
-          <ul>
-            <li><b>W, A, S, D</b> — Yugurish (Counter-strafing)</li>
-            <li><b>Space</b> — Sakrash (Jump / Bunny Hop)</li>
-            <li><b>Ctrl</b> — Cho'qqayish (Crouch)</li>
-            <li><b>Shift</b> — Sekin yurish (Walk)</li>
-            <li><b>Sichqoncha Chap tugmasi</b> — O't ochish (yoki teskari rejimda Zoom)</li>
-            <li><b>Sichqoncha O'ng tugmasi (yoki Z / V)</b> — Barcha qurollarda YA Q I N L A S H T I R I S H (Zoom / ADS)</li>
-            <li><b>R</b> — O'qni yangilash (Reload)</li>
-            <li><b>1, 2, 3</b> — Qurollarni almashtirish (Asosiy, Pistol, Pichoq)</li>
-            <li><b>B</b> — Qurollar do'koni (Buy Menu)</li>
-            <li><b>ESC</b> — Menyuni ochish / qulflash</li>
-          </ul>
+          <h4>Boshqaruv yo'riqnomasi:</h4>
+          <div class="guide-cols">
+            <div>
+              <p><b>Mobil boshqaruv (Counter Mobile):</b></p>
+              <ul>
+                <li><b>Chap zona:</b> Dynamic Floating Joystick (Yugurish)</li>
+                <li><b>O'ng zona:</b> Barmoq bilan surish (Nishonga olish)</li>
+                <li><b>FIRE tugmasi:</b> O't ochish (bitta bosish yoki sprey)</li>
+                <li><b>ZOOM tugmasi:</b> Optik yaqinlashtirish</li>
+                <li><b>JUMP & CROUCH:</b> Sakrash va cho'qqayish</li>
+              </ul>
+            </div>
+            <div>
+              <p><b>Kompyuter boshqaruvi (PC):</b></p>
+              <ul>
+                <li><b>W, A, S, D</b> — Yugurish & Strafing</li>
+                <li><b>Space</b> — Sakrash, <b>Ctrl</b> — Cho'qqayish</li>
+                <li><b>Sichqoncha Chap</b> — O't ochish</li>
+                <li><b>Sichqoncha O'ng</b> — Zoom (Yaqinlashtirish)</li>
+                <li><b>R</b> — Reload, <b>1, 2, 3</b> — Qurollar, <b>B</b> — Do'kon</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -151,7 +299,10 @@
     <!-- Buy Menu Modal ('B' key) -->
     <div id="buy-menu" class="hidden">
       <div class="buy-modal">
-        <h3>CS2 QUROLLAR DUKONI (BUY MENU)</h3>
+        <div class="buy-header">
+          <h3>CS2 QUROLLAR DUKONI (BUY MENU)</h3>
+          <button id="close-buy-menu-btn" class="close-btn">X</button>
+        </div>
         <div class="weapons-grid">
           <button class="weapon-buy-btn" data-weapon="ak47">
             <span class="w-name">AK-47</span>
@@ -179,7 +330,7 @@
             <span class="w-price">BEPUL</span>
           </button>
         </div>
-        <p class="hint">Yopish uchun yana 'B' yoki 'ESC' tugmasini bosing</p>
+        <p class="hint">Yopish uchun ekrandagi X tugmasini yoki klaviaturada 'B' / 'ESC' bosing</p>
       </div>
     </div>
   </div>

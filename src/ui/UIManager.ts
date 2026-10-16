@@ -5,6 +5,10 @@ import { Bot } from '../bots/BotManager';
 export class UIManager {
   private healthEl: HTMLElement;
   private armorEl: HTMLElement;
+  private healthBarFillEl: HTMLElement | null = null;
+  private armorBarFillEl: HTMLElement | null = null;
+  private healthBoxEl: HTMLElement | null = null;
+
   private clipAmmoEl: HTMLElement;
   private reserveAmmoEl: HTMLElement;
   private weaponNameEl: HTMLElement;
@@ -27,9 +31,15 @@ export class UIManager {
   private bannerScoreCTEl: HTMLElement;
   private bannerScoreTEl: HTMLElement;
 
+  private radarPulseTimer: number = 0;
+
   constructor() {
     this.healthEl = document.getElementById('health-val')!;
     this.armorEl = document.getElementById('armor-val')!;
+    this.healthBarFillEl = document.getElementById('health-bar-fill');
+    this.armorBarFillEl = document.getElementById('armor-bar-fill');
+    this.healthBoxEl = document.getElementById('health-box');
+
     this.clipAmmoEl = document.getElementById('clip-ammo')!;
     this.reserveAmmoEl = document.getElementById('reserve-ammo')!;
     this.weaponNameEl = document.getElementById('weapon-display-name')!;
@@ -60,8 +70,26 @@ export class UIManager {
     reserveAmmo: number,
     activeSlot: number
   ) {
-    this.healthEl.textContent = `${Math.max(0, Math.round(health))}`;
-    this.armorEl.textContent = `${Math.max(0, Math.round(armor))}`;
+    const healthVal = Math.max(0, Math.round(health));
+    const armorVal = Math.max(0, Math.round(armor));
+
+    this.healthEl.textContent = `${healthVal}`;
+    this.armorEl.textContent = `${armorVal}`;
+
+    if (this.healthBarFillEl) {
+      this.healthBarFillEl.style.width = `${Math.min(100, healthVal)}%`;
+    }
+    if (this.armorBarFillEl) {
+      this.armorBarFillEl.style.width = `${Math.min(100, armorVal)}%`;
+    }
+
+    if (this.healthBoxEl) {
+      if (healthVal <= 25) {
+        this.healthBoxEl.classList.add('low-hp');
+      } else {
+        this.healthBoxEl.classList.remove('low-hp');
+      }
+    }
 
     this.weaponNameEl.textContent = weapon.name.toUpperCase();
     if (weapon.type === 'melee') {
@@ -77,6 +105,12 @@ export class UIManager {
     slots.forEach((s) => s.classList.remove('active'));
     const current = document.querySelector(`.inv-slot[data-slot="${activeSlot}"]`);
     if (current) current.classList.add('active');
+
+    // Update mobile touch slots if present
+    const touchSlots = document.querySelectorAll('.touch-slot-btn');
+    touchSlots.forEach((s) => s.classList.remove('active'));
+    const currentTouch = document.getElementById(`btn-touch-slot${activeSlot}`);
+    if (currentTouch) currentTouch.classList.add('active');
   }
 
   // Precise CS2 Round Timer Countdown
@@ -158,7 +192,7 @@ export class UIManager {
     item.innerHTML = `
       <span class="kill-killer">${killer}</span>
       <span class="kill-weapon">${weapon}</span>
-      ${isHeadshot ? '<span class="kill-hs">💀 HS</span>' : ''}
+      ${isHeadshot ? '<span class="kill-hs">HEADSHOT</span>' : ''}
       <span class="kill-victim">${victim}</span>
     `;
 
@@ -166,27 +200,39 @@ export class UIManager {
 
     setTimeout(() => {
       item.style.opacity = '0';
-      item.style.transition = 'opacity 0.5s';
-      setTimeout(() => item.remove(), 500);
+      item.style.transition = 'opacity 0.4s';
+      setTimeout(() => item.remove(), 400);
     }, 4500);
   }
 
-  public updateRadar(playerPos: THREE.Vector3, playerYaw: number, bots: Bot[]) {
+  public updateRadar(playerPos: THREE.Vector3, playerYaw: number, bots: Bot[], mapId: string = 'dust2') {
     const ctx = this.radarCtx;
     const width = this.radarCanvas.width;
     const height = this.radarCanvas.height;
     const cx = width / 2;
     const cy = height / 2;
-    const scale = 1.3; // 1 meter = 1.3 pixels on radar
+    const scale = 1.25; // 1 meter = 1.25 pixels on radar
+
+    this.radarPulseTimer += 0.05;
 
     ctx.clearRect(0, 0, width, height);
 
-    // Radar Background Grid & Cross
-    ctx.strokeStyle = 'rgba(224, 159, 62, 0.15)';
+    // Radar Concentric Range Rings
+    ctx.strokeStyle = 'rgba(224, 159, 62, 0.2)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.arc(cx, cy, 70, 0, Math.PI * 2);
-    ctx.arc(cx, cy, 40, 0, Math.PI * 2);
+    ctx.arc(cx, cy, 45, 0, Math.PI * 2);
+    ctx.arc(cx, cy, 20, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Crosshairs
+    ctx.strokeStyle = 'rgba(224, 159, 62, 0.12)';
+    ctx.beginPath();
+    ctx.moveTo(cx, 8);
+    ctx.lineTo(cx, height - 8);
+    ctx.moveTo(8, cy);
+    ctx.lineTo(width - 8, cy);
     ctx.stroke();
 
     // Player Field of View Cone
@@ -194,13 +240,57 @@ export class UIManager {
     ctx.translate(cx, cy);
     ctx.rotate(-playerYaw);
 
-    ctx.fillStyle = 'rgba(0, 255, 136, 0.15)';
+    const fovGrad = ctx.createRadialGradient(0, 0, 5, 0, 0, 75);
+    fovGrad.addColorStop(0, 'rgba(0, 255, 136, 0.35)');
+    fovGrad.addColorStop(1, 'rgba(0, 255, 136, 0)');
+    ctx.fillStyle = fovGrad;
     ctx.beginPath();
     ctx.moveTo(0, 0);
     ctx.arc(0, 0, 75, -Math.PI / 4 - Math.PI / 2, Math.PI / 4 - Math.PI / 2);
     ctx.closePath();
     ctx.fill();
+
+    // Forward Direction Arrow
+    ctx.fillStyle = '#00ff88';
+    ctx.beginPath();
+    ctx.moveTo(0, -14);
+    ctx.lineTo(4, -6);
+    ctx.lineTo(-4, -6);
+    ctx.closePath();
+    ctx.fill();
     ctx.restore();
+
+    // Bombsites Coordinates on Radar (A & B)
+    const sites = mapId === 'tashkent' ? [
+      { name: 'A', x: 38, z: -25 },
+      { name: 'B', x: -38, z: 25 },
+    ] : [
+      { name: 'A', x: 38, z: -25 },
+      { name: 'B', x: -36, z: -25 },
+    ];
+
+    for (const site of sites) {
+      const dx = (site.x - playerPos.x) * scale;
+      const dz = (site.z - playerPos.z) * scale;
+      const cos = Math.cos(playerYaw);
+      const sin = Math.sin(playerYaw);
+      const rx = dx * cos - dz * sin;
+      const ry = dx * sin + dz * cos;
+      const dist = Math.sqrt(rx * rx + ry * ry);
+
+      if (dist < 70) {
+        ctx.fillStyle = 'rgba(224, 159, 62, 0.9)';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.beginPath();
+        ctx.arc(cx + rx, cy + ry, 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#0d1117';
+        ctx.fillText(site.name, cx + rx, cy + ry);
+      }
+    }
 
     // Render Bots on Radar
     for (const bot of bots) {
@@ -218,10 +308,23 @@ export class UIManager {
       // Check if within radar circle radius
       const dist = Math.sqrt(rx * rx + ry * ry);
       if (dist < 72) {
+        // Red ping halo
+        const pulse = Math.sin(this.radarPulseTimer * 4) * 2;
+        ctx.strokeStyle = 'rgba(255, 56, 56, 0.4)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(cx + rx, cy + ry, 6 + pulse, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Bot red blip with dark outline
         ctx.fillStyle = '#ff3838';
         ctx.beginPath();
-        ctx.arc(cx + rx, cy + ry, 4, 0, Math.PI * 2);
+        ctx.arc(cx + rx, cy + ry, 4.5, 0, Math.PI * 2);
         ctx.fill();
+
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1;
+        ctx.stroke();
       }
     }
   }

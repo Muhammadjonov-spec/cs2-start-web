@@ -321,18 +321,18 @@ export class TextureGenerator {
     canvas.height = size;
     const ctx = canvas.getContext('2d')!;
 
-    // Rich neutral urban stone granite (NOT pure white!)
-    ctx.fillStyle = '#5c636e';
+    // Rich neutral dark slate urban stone granite (NOT pure white!)
+    ctx.fillStyle = '#3a404c';
     ctx.fillRect(0, 0, size, size);
 
     const tileSize = 64;
     for (let y = 0; y < size; y += tileSize) {
       for (let x = 0; x < size; x += tileSize) {
-        const tone = Math.floor(Math.random() * 28 - 14);
-        ctx.fillStyle = `rgb(${92 + tone}, ${99 + tone}, ${110 + tone})`;
+        const tone = Math.floor(Math.random() * 24 - 12);
+        ctx.fillStyle = `rgb(${58 + tone}, ${64 + tone}, ${76 + tone})`;
         ctx.fillRect(x + 2, y + 2, tileSize - 4, tileSize - 4);
 
-        ctx.strokeStyle = '#32373f';
+        ctx.strokeStyle = '#20242b';
         ctx.lineWidth = 3;
         ctx.strokeRect(x, y, tileSize, tileSize);
       }
